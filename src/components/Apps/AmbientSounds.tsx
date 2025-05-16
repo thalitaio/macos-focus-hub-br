@@ -16,31 +16,31 @@ const AmbientSounds: React.FC = () => {
       id: 'cafe',
       name: 'Café',
       icon: '☕',
-      audioUrl: 'https://freesound.org/data/previews/386/386464_4921277-lq.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_885582782a.mp3?filename=coffee-shop-ambience-6362.mp3',
     },
     {
       id: 'rain',
       name: 'Chuva',
       icon: '🌧️',
-      audioUrl: 'https://freesound.org/data/previews/497/497053_7329610-lq.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_22c076d5d2.mp3?filename=light-rain-ambient-114354.mp3',
     },
     {
       id: 'keyboard',
       name: 'Teclado',
       icon: '⌨️',
-      audioUrl: 'https://freesound.org/data/previews/352/352503_5121236-lq.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_37e8501578.mp3?filename=keyboard-typing-6483.mp3',
     },
     {
       id: 'nature',
       name: 'Natureza',
       icon: '🌳',
-      audioUrl: 'https://freesound.org/data/previews/619/619108_1648170-lq.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d1843cd877.mp3?filename=forest-with-small-river-birds-and-nature-field-recording-6735.mp3',
     },
     {
       id: 'fire',
       name: 'Fogueira',
       icon: '🔥',
-      audioUrl: 'https://freesound.org/data/previews/349/349826_5121236-lq.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_7903c37a7a.mp3?filename=crackling-fireplace-nature-sounds-8012.mp3',
     },
   ]);
   
