@@ -109,7 +109,7 @@ const AppWindow: React.FC<AppWindowProps> = ({
       onClick={() => bringToFront(id)}
     >
       <div
-        className="window-titlebar cursor-move flex justify-between"
+        className="window-titlebar cursor-move flex justify-between bg-pink-50/80"
         onMouseDown={handleMouseDown}
       >
         <div className="flex items-center space-x-2">
@@ -125,7 +125,7 @@ const AppWindow: React.FC<AppWindowProps> = ({
             className="window-control bg-macos-maximize"
           />
         </div>
-        <div className="text-sm font-medium">{title}</div>
+        <div className="text-sm font-medium text-pink-800">{title}</div>
         <div className="w-20"></div> {/* Placeholder for balance */}
       </div>
       <div className="p-4 overflow-auto" style={{ height: 'calc(100% - 40px)' }}>

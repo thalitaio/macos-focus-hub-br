@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Dock from './Dock';
 import AppWindow from './AppWindow';
@@ -28,7 +27,7 @@ const Desktop: React.FC = () => {
   const [apps, setApps] = useState<AppState[]>([
     {
       id: 'ambient-sounds',
-      isOpen: false,
+      isOpen: true,
       title: 'Ambient Sounds',
       width: '320px',
       height: '400px',
@@ -39,88 +38,88 @@ const Desktop: React.FC = () => {
     },
     {
       id: 'pomodoro',
-      isOpen: false,
+      isOpen: true,
       title: 'Pomodoro Timer',
       width: '350px',
       height: '300px',
-      x: 150,
+      x: 500,
       y: 120,
       component: <PomodoroTimer />,
       minimized: false,
     },
     {
       id: 'todo',
-      isOpen: false,
+      isOpen: true,
       title: 'To-do List',
       width: '400px',
       height: '500px',
       x: 200,
-      y: 100,
+      y: 400,
       component: <TodoApp />,
       minimized: false,
     },
     {
       id: 'kanban',
-      isOpen: false,
+      isOpen: true,
       title: 'Kanban Board',
       width: '800px',
       height: '600px',
-      x: 250,
+      x: 800,
       y: 80,
       component: <KanbanBoard />,
       minimized: false,
     },
     {
       id: 'habit-tracker',
-      isOpen: false,
+      isOpen: true,
       title: 'Habit Tracker',
       width: '600px',
       height: '500px',
-      x: 300,
-      y: 100,
+      x: 900,
+      y: 400,
       component: <HabitTracker />,
       minimized: false,
     },
     {
       id: 'notepad',
-      isOpen: false,
+      isOpen: true,
       title: 'Notepad',
       width: '500px',
       height: '400px',
-      x: 350,
-      y: 120,
+      x: 650,
+      y: 350,
       component: <Notepad />,
       minimized: false,
     },
     {
       id: 'weather',
-      isOpen: false,
+      isOpen: true,
       title: 'Weather',
       width: '400px',
       height: '300px',
-      x: 400,
-      y: 150,
+      x: 350,
+      y: 500,
       component: <Weather />,
       minimized: false,
     },
     {
       id: 'currency',
-      isOpen: false,
+      isOpen: true,
       title: 'Currency Converter',
       width: '350px',
       height: '250px',
-      x: 450,
-      y: 180,
+      x: 750,
+      y: 550,
       component: <CurrencyConverter />,
       minimized: false,
     },
     {
       id: 'youtube',
-      isOpen: false,
+      isOpen: true,
       title: 'YouTube Player',
       width: '600px',
       height: '400px',
-      x: 500,
+      x: 400,
       y: 200,
       component: <YouTubePlayer />,
       minimized: false,
@@ -128,7 +127,7 @@ const Desktop: React.FC = () => {
   ]);
 
   // Track z-index for window stacking
-  const [activeAppId, setActiveAppId] = useState<string | null>(null);
+  const [activeAppId, setActiveAppId] = useState<string | null>('pomodoro');
   
   const openApp = (appId: string) => {
     setApps((prevApps) =>
@@ -194,11 +193,11 @@ const Desktop: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-gray-100 overflow-hidden relative p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50" />
+    <div className="h-screen w-screen bg-pink-50 overflow-hidden relative p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-white to-pink-50" />
       
       {/* Date and Time in top-right */}
-      <div className="absolute top-4 right-4 text-gray-700">
+      <div className="absolute top-4 right-4 text-pink-700">
         <Clock />
       </div>
 
