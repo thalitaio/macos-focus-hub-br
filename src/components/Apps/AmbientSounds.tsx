@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, Play, Pause } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, Music } from 'lucide-react';
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,31 +17,49 @@ const AmbientSounds: React.FC = () => {
       id: 'cafe',
       name: 'Café',
       icon: '☕',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_885582782a.mp3?filename=coffee-shop-ambience-6362.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-coffee-shop-ambience-612.mp3',
     },
     {
       id: 'rain',
       name: 'Chuva',
       icon: '🌧️',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_22c076d5d2.mp3?filename=light-rain-ambient-114354.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-light-rain-ambience-2478.mp3',
     },
     {
       id: 'keyboard',
       name: 'Teclado',
       icon: '⌨️',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_37e8501578.mp3?filename=keyboard-typing-6483.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-keyboard-intense-typing-2530.mp3',
     },
     {
       id: 'nature',
       name: 'Natureza',
       icon: '🌳',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d1843cd877.mp3?filename=forest-with-small-river-birds-and-nature-field-recording-6735.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-birds-ambience-1210.mp3',
     },
     {
       id: 'fire',
       name: 'Fogueira',
       icon: '🔥',
-      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_7903c37a7a.mp3?filename=crackling-fireplace-nature-sounds-8012.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-campfire-crackles-1330.mp3',
+    },
+    {
+      id: 'ocean',
+      name: 'Oceano',
+      icon: '🌊',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-ambience-1188.mp3',
+    },
+    {
+      id: 'fan',
+      name: 'Ventilador',
+      icon: '💨',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-house-fan-ambience-1218.mp3',
+    },
+    {
+      id: 'wind',
+      name: 'Vento',
+      icon: '🍃',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-blizzard-cold-winds-1153.mp3',
     },
   ]);
   
@@ -74,28 +92,33 @@ const AmbientSounds: React.FC = () => {
       if (sound) {
         audioRef.current.src = sound.audioUrl;
         audioRef.current.volume = muted ? 0 : volume;
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-          toast({
-            title: "Som ativado",
-            description: `${sound.name} está sendo reproduzido`,
-            duration: 2000,
+        
+        const playPromise = audioRef.current.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+            toast({
+              title: "Som ativado",
+              description: `${sound.name} está sendo reproduzido`,
+              duration: 2000,
+            });
+          }).catch(error => {
+            console.error("Audio playback failed:", error);
+            toast({
+              title: "Erro ao reproduzir",
+              description: "Não foi possível reproduzir o som. Tente novamente.",
+              variant: "destructive",
+            });
           });
-        }).catch(error => {
-          console.error("Audio playback failed:", error);
-          toast({
-            title: "Erro ao reproduzir",
-            description: "Não foi possível reproduzir o som. Tente novamente.",
-            variant: "destructive",
-          });
-        });
+        }
       }
     } else {
       audioRef.current.pause();
       setIsPlaying(false);
     }
     
-  }, [activeSound, sounds]);
+  }, [activeSound, sounds, toast, volume, muted]);
   
   // Handle volume changes
   useEffect(() => {
@@ -145,7 +168,7 @@ const AmbientSounds: React.FC = () => {
         <p className="text-sm text-gray-500">Selecione um som para melhorar seu foco</p>
       </div>
       
-      <div className="grid grid-cols-3 gap-2 mb-6">
+      <div className="grid grid-cols-4 gap-2 mb-6">
         {sounds.map((sound) => (
           <button
             key={sound.id}
@@ -220,6 +243,9 @@ const AmbientSounds: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Audio test element for debugging */}
+      <audio id="audio-test" style={{ display: 'none' }}></audio>
     </div>
   );
 };
