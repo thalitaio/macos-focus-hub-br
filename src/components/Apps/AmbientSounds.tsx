@@ -17,49 +17,49 @@ const AmbientSounds: React.FC = () => {
       id: 'cafe',
       name: 'Café',
       icon: '☕',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-coffee-shop-ambience-612.mp3',
+      audioUrl: 'https://www.soundjay.com/ambient/sounds/cafe-ambience-1.mp3',
     },
     {
       id: 'rain',
       name: 'Chuva',
       icon: '🌧️',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-light-rain-ambience-2478.mp3',
+      audioUrl: 'https://www.soundjay.com/nature/sounds/rain-02.mp3',
     },
     {
       id: 'keyboard',
       name: 'Teclado',
       icon: '⌨️',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-keyboard-intense-typing-2530.mp3',
+      audioUrl: 'https://www.soundjay.com/mechanical/sounds/keyboard-typing-01.mp3',
     },
     {
       id: 'nature',
       name: 'Natureza',
       icon: '🌳',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-birds-ambience-1210.mp3',
+      audioUrl: 'https://www.soundjay.com/nature/sounds/forest-birds-1.mp3',
     },
     {
       id: 'fire',
       name: 'Fogueira',
       icon: '🔥',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-campfire-crackles-1330.mp3',
+      audioUrl: 'https://www.soundjay.com/nature/sounds/campfire-1.mp3',
     },
     {
       id: 'ocean',
       name: 'Oceano',
       icon: '🌊',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-ambience-1188.mp3',
+      audioUrl: 'https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3',
     },
     {
       id: 'fan',
       name: 'Ventilador',
       icon: '💨',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-house-fan-ambience-1218.mp3',
+      audioUrl: 'https://www.soundjay.com/mechanical/sounds/fan-1.mp3',
     },
     {
       id: 'wind',
       name: 'Vento',
       icon: '🍃',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-blizzard-cold-winds-1153.mp3',
+      audioUrl: 'https://www.soundjay.com/nature/sounds/wind-1.mp3',
     },
   ]);
   
@@ -93,31 +93,58 @@ const AmbientSounds: React.FC = () => {
         audioRef.current.src = sound.audioUrl;
         audioRef.current.volume = muted ? 0 : volume;
         
-        const playPromise = audioRef.current.play();
+        // Add event listener for canplaythrough to ensure the audio is ready
+        const handleCanPlay = () => {
+          if (audioRef.current) {
+            const playPromise = audioRef.current.play();
+            
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                setIsPlaying(true);
+                toast({
+                  title: "Som ativado",
+                  description: `${sound.name} está sendo reproduzido`,
+                  duration: 2000,
+                });
+              }).catch(error => {
+                console.error("Audio playback failed:", error);
+                toast({
+                  title: "Erro ao reproduzir",
+                  description: "Não foi possível reproduzir o som. Tente novamente.",
+                  variant: "destructive",
+                });
+              });
+            }
+          }
+          
+          // Remove the event listener after it's been triggered once
+          audioRef.current?.removeEventListener('canplaythrough', handleCanPlay);
+        };
         
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            setIsPlaying(true);
-            toast({
-              title: "Som ativado",
-              description: `${sound.name} está sendo reproduzido`,
-              duration: 2000,
-            });
-          }).catch(error => {
-            console.error("Audio playback failed:", error);
-            toast({
-              title: "Erro ao reproduzir",
-              description: "Não foi possível reproduzir o som. Tente novamente.",
-              variant: "destructive",
-            });
+        audioRef.current.addEventListener('canplaythrough', handleCanPlay);
+        audioRef.current.addEventListener('error', (e) => {
+          console.error('Audio loading error:', e);
+          toast({
+            title: "Erro ao carregar áudio",
+            description: "Não foi possível carregar o arquivo de áudio.",
+            variant: "destructive",
           });
-        }
+        });
+        
+        // Preload the audio
+        audioRef.current.load();
       }
     } else {
       audioRef.current.pause();
       setIsPlaying(false);
     }
     
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener('canplaythrough', () => {});
+        audioRef.current.removeEventListener('error', () => {});
+      }
+    };
   }, [activeSound, sounds, toast, volume, muted]);
   
   // Handle volume changes
@@ -158,6 +185,30 @@ const AmbientSounds: React.FC = () => {
     setVolume(value[0]);
     if (muted && value[0] > 0) {
       setMuted(false);
+    }
+  };
+  
+  // Test direct audio playback with HTML audio element
+  const testPlaySound = (url: string) => {
+    const audioElement = document.getElementById('audio-test') as HTMLAudioElement;
+    if (audioElement) {
+      audioElement.src = url;
+      audioElement.volume = volume;
+      audioElement.loop = true;
+      audioElement.play().then(() => {
+        toast({
+          title: "Teste de áudio",
+          description: "Reproduzindo áudio de teste",
+          duration: 2000,
+        });
+      }).catch(error => {
+        console.error("Test audio playback failed:", error);
+        toast({
+          title: "Erro no teste",
+          description: "Não foi possível testar o áudio",
+          variant: "destructive",
+        });
+      });
     }
   };
   
@@ -245,7 +296,22 @@ const AmbientSounds: React.FC = () => {
       )}
       
       {/* Audio test element for debugging */}
-      <audio id="audio-test" style={{ display: 'none' }}></audio>
+      <audio id="audio-test" controls style={{ display: 'none' }}></audio>
+      
+      {/* Added debug button for testing */}
+      <div className="mt-4">
+        <button 
+          className="text-xs bg-pink-100 hover:bg-pink-200 text-pink-700 py-1 px-2 rounded"
+          onClick={() => {
+            if (activeSound) {
+              const sound = sounds.find(s => s.id === activeSound);
+              if (sound) testPlaySound(sound.audioUrl);
+            }
+          }}
+        >
+          Testar áudio atual
+        </button>
+      </div>
     </div>
   );
 };
