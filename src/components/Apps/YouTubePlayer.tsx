@@ -26,6 +26,7 @@ const YouTubePlayer: React.FC = () => {
   // Real YouTube video search results
   const searchVideos = (searchQuery: string) => {
     setIsSearching(true);
+    console.log("Searching for videos with query:", searchQuery);
     
     // More reliable video IDs and information
     setTimeout(() => {
@@ -65,6 +66,7 @@ const YouTubePlayer: React.FC = () => {
       
       setSearchResults(filteredResults);
       setIsSearching(false);
+      console.log("Search results:", filteredResults);
       
       if (filteredResults.length === 0 && searchQuery) {
         setShowErrorMessage(true);
@@ -75,10 +77,9 @@ const YouTubePlayer: React.FC = () => {
   
   // Initial load
   useEffect(() => {
-    if (!activeVideoId) {
-      searchVideos('');
-    }
-  }, [activeVideoId]);
+    console.log("YouTubePlayer component mounted");
+    searchVideos('');
+  }, []);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +87,7 @@ const YouTubePlayer: React.FC = () => {
   };
   
   const playVideo = (video: VideoItem) => {
+    console.log("Playing video:", video);
     setActiveVideoId(video.id);
     
     toast({
@@ -130,6 +132,9 @@ const YouTubePlayer: React.FC = () => {
       duration: 2000,
     });
   };
+
+  console.log("Current active video ID:", activeVideoId);
+  console.log("Is fullscreen:", isFullscreen);
   
   return (
     <div className="h-full flex flex-col">
@@ -150,13 +155,13 @@ const YouTubePlayer: React.FC = () => {
         <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black flex items-center justify-center' : 'flex-1'}`}>
           <div className={`${isFullscreen ? 'w-full h-full' : 'aspect-video w-full'}`}>
             <iframe
-              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}&enablejsapi=1`}
+              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}`}
               title="YouTube video player"
+              frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              className={`w-full h-full`}
-              style={{ border: 'none' }}
-            />
+              className="w-full h-full"
+            ></iframe>
           </div>
           
           <div className={`absolute ${isFullscreen ? 'top-4 right-4' : 'top-2 right-2'} flex space-x-2`}>
