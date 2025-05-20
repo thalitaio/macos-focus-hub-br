@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Play, Pause, Music } from 'lucide-react';
 import { Slider } from "@/components/ui/slider";
@@ -14,52 +13,28 @@ interface Sound {
 const AmbientSounds: React.FC = () => {
   const [sounds, setSounds] = useState<Sound[]>([
     {
-      id: 'cafe',
-      name: 'Café',
-      icon: '☕',
-      audioUrl: 'https://www.soundjay.com/ambient/sounds/cafe-ambience-1.mp3',
-    },
-    {
       id: 'rain',
       name: 'Chuva',
       icon: '🌧️',
-      audioUrl: 'https://www.soundjay.com/nature/sounds/rain-02.mp3',
-    },
-    {
-      id: 'keyboard',
-      name: 'Teclado',
-      icon: '⌨️',
-      audioUrl: 'https://www.soundjay.com/mechanical/sounds/keyboard-typing-01.mp3',
-    },
-    {
-      id: 'nature',
-      name: 'Natureza',
-      icon: '🌳',
-      audioUrl: 'https://www.soundjay.com/nature/sounds/forest-birds-1.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-light-rain-looping-1249.mp3',
     },
     {
       id: 'fire',
       name: 'Fogueira',
       icon: '🔥',
-      audioUrl: 'https://www.soundjay.com/nature/sounds/campfire-1.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-campfire-crackles-1330.mp3',
     },
     {
       id: 'ocean',
       name: 'Oceano',
       icon: '🌊',
-      audioUrl: 'https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3',
-    },
-    {
-      id: 'fan',
-      name: 'Ventilador',
-      icon: '💨',
-      audioUrl: 'https://www.soundjay.com/mechanical/sounds/fan-1.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-ambience-1185.mp3',
     },
     {
       id: 'wind',
       name: 'Vento',
       icon: '🍃',
-      audioUrl: 'https://www.soundjay.com/nature/sounds/wind-1.mp3',
+      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-wind-ambient-1232.mp3',
     },
   ]);
   

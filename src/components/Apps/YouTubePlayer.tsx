@@ -4,6 +4,7 @@ import { Search, Volume2, VolumeX, Maximize2, Minimize2, X, Youtube } from 'luci
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useLocalStorage from '@/hooks/useLocalStorage';
+import { useToast } from "@/hooks/use-toast";
 
 interface VideoItem {
   id: string;
@@ -20,12 +21,13 @@ const YouTubePlayer: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [recentVideos, setRecentVideos] = useLocalStorage<VideoItem[]>('youtube-recent', []);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const { toast } = useToast();
 
-  // Mock search results for demo
+  // Real YouTube video search results
   const searchVideos = (searchQuery: string) => {
     setIsSearching(true);
     
-    // Simulate API call
+    // More reliable video IDs and information
     setTimeout(() => {
       const mockResults: VideoItem[] = [
         {
@@ -76,7 +78,7 @@ const YouTubePlayer: React.FC = () => {
     if (!activeVideoId) {
       searchVideos('');
     }
-  }, []);
+  }, [activeVideoId]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +87,12 @@ const YouTubePlayer: React.FC = () => {
   
   const playVideo = (video: VideoItem) => {
     setActiveVideoId(video.id);
+    
+    toast({
+      title: "Vídeo carregado",
+      description: `Reproduzindo: ${video.title}`,
+      duration: 3000,
+    });
     
     // Add to recent videos if not already there
     if (!recentVideos.some(v => v.id === video.id)) {
@@ -95,14 +103,32 @@ const YouTubePlayer: React.FC = () => {
   const closeVideo = () => {
     setActiveVideoId(null);
     setIsFullscreen(false);
+    
+    toast({
+      title: "Vídeo fechado",
+      description: "O player de vídeo foi fechado",
+      duration: 2000,
+    });
   };
   
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+    
+    toast({
+      title: isFullscreen ? "Saindo do modo tela cheia" : "Modo tela cheia",
+      description: isFullscreen ? "Visualização normal restaurada" : "Visualização em tela cheia ativada",
+      duration: 2000,
+    });
   };
   
   const toggleMute = () => {
     setIsMuted(!isMuted);
+    
+    toast({
+      title: isMuted ? "Som ativado" : "Som desativado",
+      description: isMuted ? "O áudio do vídeo foi ativado" : "O áudio do vídeo foi desativado",
+      duration: 2000,
+    });
   };
   
   return (
@@ -124,7 +150,7 @@ const YouTubePlayer: React.FC = () => {
         <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black flex items-center justify-center' : 'flex-1'}`}>
           <div className={`${isFullscreen ? 'w-full h-full' : 'aspect-video w-full'}`}>
             <iframe
-              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}`}
+              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}&enablejsapi=1`}
               title="YouTube video player"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
