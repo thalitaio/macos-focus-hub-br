@@ -59,87 +59,22 @@ const AmbientSounds: React.FC = () => {
     };
   }, []);
   
-  // Handle sound changes
+  // Handle sound changes - Simplified: This might pause if activeSound is set to null elsewhere
   useEffect(() => {
     if (!audioRef.current) return;
-    
-    if (activeSound) {
-      const sound = sounds.find(s => s.id === activeSound);
-      if (sound) {
-        console.log("Setting audio source:", sound.audioUrl);
-        audioRef.current.src = sound.audioUrl;
-        audioRef.current.volume = muted ? 0 : volume;
-        
-        // Add event listener for canplaythrough to ensure the audio is ready
-        const handleCanPlay = () => {
-          if (audioRef.current) {
-            console.log("Audio can play now, attempting playback");
-            const playPromise = audioRef.current.play();
-            
-            if (playPromise !== undefined) {
-              playPromise.then(() => {
-                console.log("Playback started successfully");
-                setIsPlaying(true);
-                toast({
-                  title: "Som ativado",
-                  description: `${sound.name} está sendo reproduzido`,
-                  duration: 2000,
-                });
-              }).catch(error => {
-                console.error("Audio playback failed:", error);
-                setIsPlaying(false);
-                toast({
-                  title: "Erro ao reproduzir",
-                  description: "Não foi possível reproduzir o som. Tente novamente.",
-                  variant: "destructive",
-                });
-              });
-            }
-          }
-          
-          // Remove the event listener after it's been triggered once
-          if (audioRef.current) {
-            audioRef.current.removeEventListener('canplaythrough', handleCanPlay);
-          }
-        };
-        
-        // Add error handling
-        const handleError = (e: Event) => {
-          console.error('Audio loading error:', e);
-          setIsPlaying(false);
-          toast({
-            title: "Erro ao carregar áudio",
-            description: "Não foi possível carregar o arquivo de áudio.",
-            variant: "destructive",
-          });
-        };
-        
-        // Clean up previous event listeners
-        audioRef.current.removeEventListener('canplaythrough', handleCanPlay);
-        audioRef.current.removeEventListener('error', handleError);
-        
-        // Add new event listeners
-        audioRef.current.addEventListener('canplaythrough', handleCanPlay);
-        audioRef.current.addEventListener('error', handleError);
-        
-        // Preload the audio
-        console.log("Loading audio...");
-        audioRef.current.load();
-      }
-    } else {
-      console.log("No active sound, pausing audio");
+
+    if (!activeSound && isPlaying) {
+      // If activeSound is null and audio is still marked as playing, pause it.
+      // This can happen if activeSound is set to null directly, not via toggleSound.
+      console.log("activeSound is null, ensuring audio is paused.");
       audioRef.current.pause();
       setIsPlaying(false);
     }
-    
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener('canplaythrough', () => {});
-        audioRef.current.removeEventListener('error', () => {});
-      }
-    };
-  }, [activeSound, sounds, toast]);
-  
+    // Event listeners for 'canplaythrough' and 'error' are removed as per instructions,
+    // as playback is now handled more directly in toggleSound.
+    // Cleanup of listeners is also removed for the same reason.
+  }, [activeSound, isPlaying]); // Added isPlaying to dependencies
+
   // Handle volume changes separately to avoid reloading audio
   useEffect(() => {
     if (audioRef.current) {
@@ -148,12 +83,75 @@ const AmbientSounds: React.FC = () => {
     }
   }, [volume, muted]);
   
-  const toggleSound = (soundId: string) => {
-    console.log("Toggle sound:", soundId, "Current active:", activeSound);
-    if (activeSound === soundId) {
+  const toggleSound = (newSoundId: string) => {
+    console.log("Toggle sound:", newSoundId, "Current active:", activeSound);
+
+    if (audioRef.current && newSoundId === activeSound) {
+      audioRef.current.pause();
+      setIsPlaying(false);
       setActiveSound(null);
+      console.log("Sound paused:", newSoundId);
+      // Optional: Toast for pausing, if desired
+      // toast({
+      //   title: "Som pausado",
+      //   description: `${sounds.find(s => s.id === newSoundId)?.name} foi pausado.`,
+      //   duration: 1500,
+      // });
+      return;
+    }
+
+    if (audioRef.current) {
+      // Pause previous sound if any is playing or attempting to play
+      // This check ensures we don't call pause on an already paused audio unless changing source
+      if (isPlaying || activeSound) {
+         audioRef.current.pause();
+         setIsPlaying(false);
+         console.log("Previous sound paused before switching.");
+      }
+    }
+
+    const sound = sounds.find(s => s.id === newSoundId);
+
+    if (sound && audioRef.current) {
+      console.log("Setting new audio source:", sound.audioUrl);
+      audioRef.current.src = sound.audioUrl;
+      audioRef.current.load(); // Important to load the new source
+
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log("Playback started successfully for:", sound.name);
+          setIsPlaying(true);
+          setActiveSound(newSoundId); // Set active sound only after successful play
+          toast({
+            title: "Som ativado",
+            description: `${sound.name} está sendo reproduzido`,
+            duration: 2000,
+          });
+        }).catch(error => {
+          console.error("Audio playback failed in toggleSound:", error);
+          setIsPlaying(false);
+          setActiveSound(null); // Clear active sound on error
+          toast({
+            title: "Erro ao reproduzir",
+            description: "Não foi possível reproduzir o som. Verifique as permissões do navegador para autoplay.",
+            variant: "destructive",
+          });
+        });
+      }
     } else {
-      setActiveSound(soundId);
+      if (!sound) {
+        console.error("Sound not found:", newSoundId);
+      }
+      if (!audioRef.current) {
+        console.error("Audio reference is null. Cannot play sound.");
+      }
+      // Optionally, provide feedback if the sound couldn't be played
+      toast({
+        title: "Erro",
+        description: "Não foi possível encontrar o som ou o player de áudio não está pronto.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -180,92 +178,6 @@ const AmbientSounds: React.FC = () => {
     setVolume(value[0]);
     if (muted && value[0] > 0) {
       setMuted(false);
-    }
-  };
-  
-  // Test direct audio playback
-  const testPlaySound = (url: string) => {
-    console.log("Testing sound URL:", url);
-    
-    // Create a temporary audio element for testing
-    const tempAudio = new Audio(url);
-    tempAudio.volume = volume;
-    
-    tempAudio.oncanplaythrough = () => {
-      console.log("Test audio can play, attempting playback");
-      tempAudio.play()
-        .then(() => {
-          console.log("Test playback started successfully");
-          toast({
-            title: "Teste de áudio",
-            description: "Reproduzindo áudio de teste",
-            duration: 2000,
-          });
-        })
-        .catch(error => {
-          console.error("Test audio playback failed:", error);
-          toast({
-            title: "Erro no teste",
-            description: "Não foi possível testar o áudio: " + error.message,
-            variant: "destructive",
-          });
-        });
-    };
-    
-    tempAudio.onerror = (e) => {
-      console.error("Test audio error:", e);
-      toast({
-        title: "Erro no teste",
-        description: "Erro ao carregar áudio de teste",
-        variant: "destructive",
-      });
-    };
-    
-    // Load the audio
-    tempAudio.load();
-  };
-  
-  // Force playback function - used as a backup
-  const forcePlaySelectedSound = () => {
-    if (activeSound && audioRef.current) {
-      const sound = sounds.find(s => s.id === activeSound);
-      if (sound) {
-        console.log("Force playing sound:", sound.name);
-        
-        // Try a different approach to playing the audio
-        audioRef.current.pause();
-        audioRef.current.src = sound.audioUrl;
-        audioRef.current.volume = muted ? 0 : volume;
-        audioRef.current.load();
-        
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.play()
-              .then(() => {
-                setIsPlaying(true);
-                toast({
-                  title: "Som ativado",
-                  description: `${sound.name} está sendo reproduzido`,
-                  duration: 2000,
-                });
-              })
-              .catch(err => {
-                console.error("Force play failed:", err);
-                toast({
-                  title: "Erro na reprodução forçada",
-                  description: "Não foi possível reproduzir o som mesmo forçando.",
-                  variant: "destructive",
-                });
-              });
-          }
-        }, 300);
-      }
-    } else {
-      toast({
-        title: "Nenhum som selecionado",
-        description: "Selecione um som primeiro",
-        duration: 2000,
-      });
     }
   };
   
@@ -328,7 +240,22 @@ const AmbientSounds: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => setActiveSound(null)}
+              onClick={() => {
+                if (audioRef.current && activeSound) {
+                  audioRef.current.pause();
+                  setIsPlaying(false);
+                  setActiveSound(null);
+                  // Optional: Toast for pausing
+                  const soundName = sounds.find(s => s.id === activeSound)?.name;
+                  if (soundName) {
+                    toast({
+                      title: "Som pausado",
+                      description: `${soundName} foi pausado.`,
+                      duration: 1500,
+                    });
+                  }
+                }
+              }}
               className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 bg-white/80 px-2 py-1 rounded-md"
             >
               <Pause size={16} />
@@ -351,32 +278,6 @@ const AmbientSounds: React.FC = () => {
           </div>
         </div>
       )}
-      
-      {/* Debug controls - helpful for troubleshooting */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-500 mb-2">Controles de Depuração</p>
-        <div className="flex space-x-2">
-          <button 
-            className="text-xs bg-pink-100 hover:bg-pink-200 text-pink-700 py-1 px-2 rounded"
-            onClick={forcePlaySelectedSound}
-          >
-            Forçar reprodução
-          </button>
-          <button 
-            className="text-xs bg-pink-100 hover:bg-pink-200 text-pink-700 py-1 px-2 rounded"
-            onClick={() => {
-              if (activeSound) {
-                const sound = sounds.find(s => s.id === activeSound);
-                if (sound) testPlaySound(sound.audioUrl);
-              } else {
-                testPlaySound('https://assets.mixkit.co/sfx/preview/mixkit-light-rain-looping-1249.mp3');
-              }
-            }}
-          >
-            Testar áudio
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
