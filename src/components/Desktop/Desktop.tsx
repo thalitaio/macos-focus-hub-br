@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Dock from './Dock';
 import AppWindow from './AppWindow';
@@ -29,11 +28,52 @@ interface AppState {
   minimized: boolean;
 }
 
+const motivationalMessages = [
+  "Foco no processo, não no resultado! 🎯",
+  "Pequenos progressos todos os dias! 🌱",
+  "Um passo de cada vez te leva longe! 👣",
+  "Hoje é um ótimo dia para começar! ✨",
+  "Mantenha o foco, preserve a calma! 🧘‍♂️",
+  "Sua dedicação faz a diferença! ⭐",
+  "Transforme seus planos em ação! 💪",
+  "Cultive bons hábitos, colha resultados! 🌿",
+  "Concentre-se no que importa! 🎯",
+  "Respire fundo e siga em frente! 🌅"
+];
+
+const WelcomeMessage: React.FC = () => {
+  const [message, setMessage] = useState(() => {
+    const randomIndex = Math.floor(Math.random() * motivationalMessages.length);
+    return motivationalMessages[randomIndex];
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * motivationalMessages.length);
+      setMessage(motivationalMessages[randomIndex]);
+    }, 5000); // Muda a mensagem a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+      <h1 className="text-4xl font-bold text-pink-800 mb-4 transition-opacity duration-500">{message}</h1>
+      <p className="text-lg text-pink-600 mb-8">Clique nos ícones da barra inferior para abrir os aplicativos</p>
+      <div className="animate-bounce text-pink-500">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
 const Desktop: React.FC = () => {
   const [apps, setApps] = useState<AppState[]>([
     {
       id: 'pomodoro',
-      isOpen: true,
+      isOpen: false,
       title: 'Pomodoro Timer',
       width: '350px',
       height: '300px',
@@ -44,7 +84,7 @@ const Desktop: React.FC = () => {
     },
     {
       id: 'todo',
-      isOpen: true,
+      isOpen: false,
       title: 'Lista de Tarefas',
       width: '400px',
       height: '500px',
@@ -55,7 +95,7 @@ const Desktop: React.FC = () => {
     },
     {
       id: 'kanban',
-      isOpen: true,
+      isOpen: false,
       title: 'Kanban Board',
       width: '800px',
       height: '600px',
@@ -66,7 +106,7 @@ const Desktop: React.FC = () => {
     },
     {
       id: 'habit-tracker',
-      isOpen: true,
+      isOpen: false,
       title: 'Habit Tracker',
       width: '600px',
       height: '500px',
@@ -104,13 +144,13 @@ const Desktop: React.FC = () => {
       width: '350px',
       height: '250px',
       x: 100,
-      y: 940,
+      y: 320,
       component: <CurrencyConverter />,
       minimized: false,
     },
     {
       id: 'youtube',
-      isOpen: true,
+      isOpen: false,
       title: 'YouTube',
       width: '600px',
       height: '400px',
@@ -188,8 +228,8 @@ const Desktop: React.FC = () => {
   ]);
 
   // Track z-index for window stacking
-  const [activeAppId, setActiveAppId] = useState<string | null>('youtube');
-  
+  const [activeAppId, setActiveAppId] = useState<string | null>(null);
+
   const openApp = (appId: string) => {
     setApps((prevApps) =>
       prevApps.map((app) => {
@@ -211,7 +251,7 @@ const Desktop: React.FC = () => {
         return app;
       })
     );
-    
+
     // Update active app if the closed app was active
     if (activeAppId === appId) {
       const openApps = apps.filter(app => app.isOpen && app.id !== appId);
@@ -256,7 +296,10 @@ const Desktop: React.FC = () => {
   return (
     <div className="h-screen w-screen bg-pink-50 overflow-hidden relative p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-white to-pink-50" />
-      
+
+      {/* Welcome Message */}
+      {!apps.some(app => app.isOpen) && <WelcomeMessage />}
+
       {/* Date and Time in top-right */}
       <div className="absolute top-4 right-4 text-pink-700">
         <Clock />
@@ -290,28 +333,28 @@ export default Desktop;
 
 const Clock: React.FC = () => {
   const [date, setDate] = useState(new Date());
-  
+
   useEffect(() => {
     const timer = setInterval(() => {
       setDate(new Date());
     }, 60000); // Update every minute
-    
+
     return () => {
       clearInterval(timer);
     };
   }, []);
-  
+
   const formatDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'short',
-      month: 'short', 
+      month: 'short',
       day: 'numeric',
-      hour: '2-digit', 
+      hour: '2-digit',
       minute: '2-digit'
     };
     return date.toLocaleDateString('pt-BR', options);
   };
-  
+
   return (
     <div className="text-sm font-medium">
       {formatDate(date)}
