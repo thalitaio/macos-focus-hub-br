@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Volume2, VolumeX, Maximize2, Minimize2, X, Youtube } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,7 @@ interface VideoItem {
 
 const YouTubePlayer: React.FC = () => {
   const [query, setQuery] = useState('');
-  const [activeVideoId, setActiveVideoId] = useLocalStorage<string | null>('youtube-active-video', null);
+  const [activeVideoId, setActiveVideoId] = useLocalStorage<string | null>('youtube-active-video', '5qap5aO4i9A'); // Default to lofi girl video
   const [searchResults, setSearchResults] = useState<VideoItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -97,16 +96,12 @@ const YouTubePlayer: React.FC = () => {
     console.log("YouTubePlayer component mounted");
     searchVideos('');
     
-    // Automatically play the first lofi video if no active video
-    if (!activeVideoId && lofiVideos.length > 0) {
-      setTimeout(() => {
-        playVideo(lofiVideos[0]);
-        toast({
-          title: "Bem-vindo ao YouTube Player",
-          description: "Iniciando automaticamente uma playlist lofi para você",
-          duration: 3000,
-        });
-      }, 1000);
+    // If there's no active video in local storage, add the lofi girl to recent videos
+    if (activeVideoId === '5qap5aO4i9A' && !recentVideos.some(v => v.id === '5qap5aO4i9A')) {
+      const lofiGirl = lofiVideos.find(v => v.id === '5qap5aO4i9A');
+      if (lofiGirl) {
+        setRecentVideos([lofiGirl, ...recentVideos].slice(0, 5));
+      }
     }
   }, []);
   
@@ -163,7 +158,6 @@ const YouTubePlayer: React.FC = () => {
   };
 
   console.log("Current active video ID:", activeVideoId);
-  console.log("Is fullscreen:", isFullscreen);
   
   return (
     <div className="h-full flex flex-col">
@@ -184,7 +178,7 @@ const YouTubePlayer: React.FC = () => {
         <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black flex items-center justify-center' : 'flex-1'}`}>
           <div className={`${isFullscreen ? 'w-full h-full' : 'aspect-video w-full'}`}>
             <iframe
-              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}`}
+              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0`}
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
