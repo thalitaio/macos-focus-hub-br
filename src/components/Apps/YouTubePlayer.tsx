@@ -1,301 +1,280 @@
+
 import React, { useState, useEffect } from 'react';
-import { Search, Volume2, VolumeX, Maximize2, Minimize2, X, Youtube } from 'lucide-react';
+import { Search, Play, Volume2, VolumeX, Maximize2, Minimize2, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { useToast } from "@/hooks/use-toast";
 
-interface VideoItem {
+interface Video {
   id: string;
   title: string;
   thumbnail: string;
+  channel: string;
 }
 
 const YouTubePlayer: React.FC = () => {
-  const [query, setQuery] = useState('');
-  const [activeVideoId, setActiveVideoId] = useLocalStorage<string | null>('youtube-active-video', '5qap5aO4i9A'); // Default to lofi girl video
-  const [searchResults, setSearchResults] = useState<VideoItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentVideo, setCurrentVideo] = useLocalStorage<Video | null>('youtube-current-video', null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [recentVideos, setRecentVideos] = useLocalStorage<VideoItem[]>('youtube-recent', []);
-  const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [recentVideos, setRecentVideos] = useLocalStorage<Video[]>('youtube-recent', []);
   const { toast } = useToast();
 
-  // Lofi videos suggestions
-  const lofiVideos: VideoItem[] = [
+  // Vídeos lofi pré-configurados
+  const lofiVideos: Video[] = [
     {
       id: '5qap5aO4i9A',
-      title: 'lofi hip hop radio - beats to relax/study to',
-      thumbnail: 'https://img.youtube.com/vi/5qap5aO4i9A/mqdefault.jpg',
+      title: 'lofi hip hop radio 📚 - beats to relax/study to',
+      thumbnail: `https://img.youtube.com/vi/5qap5aO4i9A/mqdefault.jpg`,
+      channel: 'Lofi Girl'
     },
     {
       id: 'jfKfPfyJRdk',
-      title: 'lofi hip hop radio - beats to sleep/chill to',
-      thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg',
+      title: 'lofi hip hop radio 😴 - beats to sleep/chill to',
+      thumbnail: `https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg`,
+      channel: 'Lofi Girl'
     },
     {
       id: 'lTRiuFIWV54',
-      title: 'Study Music Alpha Waves: Focus Music',
-      thumbnail: 'https://img.youtube.com/vi/lTRiuFIWV54/mqdefault.jpg',
+      title: 'Study Music Alpha Waves: Relaxing Studying Music',
+      thumbnail: `https://img.youtube.com/vi/lTRiuFIWV54/mqdefault.jpg`,
+      channel: 'YellowBrickCinema'
     },
     {
       id: 'n61ULEU7CO0',
       title: 'Ambient Study Music To Concentrate',
-      thumbnail: 'https://img.youtube.com/vi/n61ULEU7CO0/mqdefault.jpg',
+      thumbnail: `https://img.youtube.com/vi/n61ULEU7CO0/mqdefault.jpg`,
+      channel: 'The Relaxed Movement'
     },
     {
       id: 'DWcJFNfaw9c',
-      title: 'lofi hip hop radio - beats to study/relax to',
-      thumbnail: 'https://img.youtube.com/vi/DWcJFNfaw9c/mqdefault.jpg',
+      title: 'Chillhop Radio - jazzy & lofi hip hop beats',
+      thumbnail: `https://img.youtube.com/vi/DWcJFNfaw9c/mqdefault.jpg`,
+      channel: 'Chillhop Music'
     },
     {
       id: 'XULUBg_ZcAU',
-      title: 'beats to study/focus to',
-      thumbnail: 'https://img.youtube.com/vi/XULUBg_ZcAU/mqdefault.jpg',
-    },
-    {
-      id: 'FhiAFo9U_sM',
-      title: 'Friday night vibes ~ lofi hip hop mix',
-      thumbnail: 'https://img.youtube.com/vi/FhiAFo9U_sM/mqdefault.jpg',
-    },
-    {
-      id: 'sJGQWspFdhE',
-      title: 'rainy day studying 📚 [lofi hip hop/study beats]',
-      thumbnail: 'https://img.youtube.com/vi/sJGQWspFdhE/mqdefault.jpg',
-    },
+      title: 'lofi beats - focus music for work and study',
+      thumbnail: `https://img.youtube.com/vi/XULUBg_ZcAU/mqdefault.jpg`,
+      channel: 'Chilled Cow'
+    }
   ];
-  
-  const searchVideos = (searchQuery: string) => {
-    setIsSearching(true);
-    console.log("Searching for videos with query:", searchQuery);
-    
-    setTimeout(() => {
-      let results = [...lofiVideos];
-      
-      // Filter results based on query if provided
-      if (searchQuery) {
-        results = results.filter(v => 
-          v.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      setSearchResults(results);
-      setIsSearching(false);
-      console.log("Search results:", results);
-      
-      if (results.length === 0 && searchQuery) {
-        setShowErrorMessage(true);
-        setTimeout(() => setShowErrorMessage(false), 3000);
-      }
-    }, 500);
-  };
-  
-  // Initial load
+
+  const [availableVideos, setAvailableVideos] = useState<Video[]>(lofiVideos);
+
+  // Inicializar com lofi girl se não houver vídeo atual
   useEffect(() => {
-    console.log("YouTubePlayer component mounted");
-    searchVideos('');
-    
-    // If there's no active video in local storage, add the lofi girl to recent videos
-    if (activeVideoId === '5qap5aO4i9A' && !recentVideos.some(v => v.id === '5qap5aO4i9A')) {
-      const lofiGirl = lofiVideos.find(v => v.id === '5qap5aO4i9A');
-      if (lofiGirl) {
-        setRecentVideos([lofiGirl, ...recentVideos].slice(0, 5));
-      }
+    if (!currentVideo) {
+      const lofiGirl = lofiVideos[0];
+      setCurrentVideo(lofiGirl);
+      setIsPlaying(true);
+      
+      toast({
+        title: "YouTube Player iniciado",
+        description: "Reproduzindo música lofi para estudar",
+        duration: 3000,
+      });
     }
   }, []);
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    searchVideos(query);
-  };
-  
-  const playVideo = (video: VideoItem) => {
-    console.log("Playing video:", video);
-    setActiveVideoId(video.id);
+    if (!searchQuery.trim()) return;
+
+    // Simular busca filtrando vídeos lofi por título
+    const filtered = lofiVideos.filter(video => 
+      video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      video.channel.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    setAvailableVideos(filtered);
     
-    toast({
-      title: "Vídeo carregado",
-      description: `Reproduzindo: ${video.title}`,
-      duration: 3000,
-    });
-    
-    // Add to recent videos if not already there
-    if (!recentVideos.some(v => v.id === video.id)) {
-      setRecentVideos([video, ...recentVideos].slice(0, 5));
+    if (filtered.length === 0) {
+      toast({
+        title: "Nenhum resultado encontrado",
+        description: `Não encontramos vídeos para "${searchQuery}"`,
+        duration: 3000,
+      });
     }
   };
-  
-  const closeVideo = () => {
-    setActiveVideoId(null);
-    setIsFullscreen(false);
+
+  const playVideo = (video: Video) => {
+    setCurrentVideo(video);
+    setIsPlaying(true);
+    
+    // Adicionar aos recentes se não estiver lá
+    const newRecents = [video, ...recentVideos.filter(v => v.id !== video.id)].slice(0, 5);
+    setRecentVideos(newRecents);
     
     toast({
-      title: "Vídeo fechado",
-      description: "O player de vídeo foi fechado",
-      duration: 2000,
-    });
-  };
-  
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-    
-    toast({
-      title: isFullscreen ? "Saindo do modo tela cheia" : "Modo tela cheia",
-      description: isFullscreen ? "Visualização normal restaurada" : "Visualização em tela cheia ativada",
-      duration: 2000,
-    });
-  };
-  
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    
-    toast({
-      title: isMuted ? "Som ativado" : "Som desativado",
-      description: isMuted ? "O áudio do vídeo foi ativado" : "O áudio do vídeo foi desativado",
+      title: "Reproduzindo",
+      description: video.title,
       duration: 2000,
     });
   };
 
-  console.log("Current active video ID:", activeVideoId);
-  
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const closePlayer = () => {
+    setCurrentVideo(null);
+    setIsPlaying(false);
+    setIsFullscreen(false);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setAvailableVideos(lofiVideos);
+  };
+
   return (
-    <div className="h-full flex flex-col">
-      <form onSubmit={handleSearch} className="mb-4 flex space-x-2">
-        <Input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Pesquisar no YouTube..."
-          className="flex-1"
-        />
-        <Button type="submit" disabled={isSearching}>
-          <Search size={18} />
-        </Button>
-      </form>
-      
-      {activeVideoId ? (
-        <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black flex items-center justify-center' : 'flex-1'}`}>
-          <div className={`${isFullscreen ? 'w-full h-full' : 'aspect-video w-full'}`}>
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Barra de busca */}
+      <div className="p-4 bg-white border-b">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar vídeos lofi..."
+            className="flex-1"
+          />
+          <Button type="submit" size="icon">
+            <Search size={18} />
+          </Button>
+          {searchQuery && (
+            <Button type="button" variant="outline" onClick={clearSearch}>
+              Limpar
+            </Button>
+          )}
+        </form>
+      </div>
+
+      {/* Player de vídeo */}
+      {currentVideo && (
+        <div className={`${isFullscreen ? 'fixed inset-0 z-50 bg-black' : 'relative'}`}>
+          <div className={`${isFullscreen ? 'w-full h-full' : 'aspect-video'} relative`}>
             <iframe
-              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0`}
-              title="YouTube video player"
+              src={`https://www.youtube.com/embed/${currentVideo.id}?autoplay=${isPlaying ? 1 : 0}&mute=${isMuted ? 1 : 0}&rel=0&modestbranding=1`}
+              title={currentVideo.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className="w-full h-full"
-            ></iframe>
+            />
+            
+            {/* Controles do player */}
+            <div className={`absolute ${isFullscreen ? 'top-4 right-4' : 'top-2 right-2'} flex gap-2`}>
+              <Button 
+                size="icon" 
+                variant="secondary"
+                onClick={toggleMute}
+                className="bg-black/70 hover:bg-black/90 text-white"
+              >
+                {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              </Button>
+              <Button 
+                size="icon" 
+                variant="secondary"
+                onClick={toggleFullscreen}
+                className="bg-black/70 hover:bg-black/90 text-white"
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </Button>
+              <Button 
+                size="icon" 
+                variant="secondary"
+                onClick={closePlayer}
+                className="bg-black/70 hover:bg-black/90 text-white"
+              >
+                <X size={16} />
+              </Button>
+            </div>
           </div>
           
-          <div className={`absolute ${isFullscreen ? 'top-4 right-4' : 'top-2 right-2'} flex space-x-2`}>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={toggleMute}
-              className="bg-black/70 hover:bg-black/90 text-white border-none"
-            >
-              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={toggleFullscreen}
-              className="bg-black/70 hover:bg-black/90 text-white border-none"
-            >
-              {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={closeVideo}
-              className="bg-black/70 hover:bg-black/90 text-white border-none"
-            >
-              <X size={18} />
-            </Button>
-          </div>
+          {/* Info do vídeo atual */}
+          {!isFullscreen && (
+            <div className="p-3 bg-white border-b">
+              <h3 className="font-medium text-sm">{currentVideo.title}</h3>
+              <p className="text-xs text-gray-600">{currentVideo.channel}</p>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto space-y-6">
-          {showErrorMessage && (
-            <div className="bg-red-100 border border-red-200 text-red-800 px-4 py-2 rounded-md mb-4">
-              Nenhum resultado encontrado para "{query}"
-            </div>
-          )}
-          
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div>
-              <h3 className="text-lg font-medium mb-3">
-                {query ? `Resultados para "${query}"` : 'Lofi Recomendados'}
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {searchResults.map(video => (
-                  <div
-                    key={video.id}
-                    className="cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => playVideo(video)}
-                  >
-                    <div className="aspect-video bg-gray-200 rounded-md mb-1 relative overflow-hidden">
-                      <img 
-                        src={video.thumbnail} 
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity">
-                        <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-                          <div className="w-0 h-0 border-t-6 border-t-transparent border-l-8 border-l-white border-b-6 border-b-transparent ml-1" />
-                        </div>
-                      </div>
+      )}
+
+      {/* Lista de vídeos */}
+      {!isFullscreen && (
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Vídeos disponíveis */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">
+              {searchQuery ? `Resultados para "${searchQuery}"` : 'Vídeos Lofi Recomendados'}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {availableVideos.map((video) => (
+                <div
+                  key={video.id}
+                  className="flex gap-3 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => playVideo(video)}
+                >
+                  <div className="relative w-24 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                    <img 
+                      src={video.thumbnail} 
+                      alt={video.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity">
+                      <Play size={16} className="text-white" />
                     </div>
-                    <div className="text-sm font-medium line-clamp-2">{video.title}</div>
                   </div>
-                ))}
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium line-clamp-2 mb-1">{video.title}</h4>
+                    <p className="text-xs text-gray-600">{video.channel}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-          
-          {/* Recent Videos */}
+          </div>
+
+          {/* Vídeos recentes */}
           {recentVideos.length > 0 && (
             <div>
-              <h3 className="text-lg font-medium mb-3">Assistidos recentemente</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {recentVideos.map(video => (
+              <h3 className="text-lg font-semibold mb-3">Reproduzidos recentemente</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {recentVideos.map((video) => (
                   <div
                     key={video.id}
-                    className="cursor-pointer hover:opacity-90 transition-opacity"
+                    className="flex gap-3 p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => playVideo(video)}
                   >
-                    <div className="aspect-video bg-gray-200 rounded-md mb-1 relative overflow-hidden">
+                    <div className="relative w-24 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                       <img 
                         src={video.thumbnail} 
                         alt={video.title}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 hover:opacity-100 transition-opacity">
-                        <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-                          <div className="w-0 h-0 border-t-6 border-t-transparent border-l-8 border-l-white border-b-6 border-b-transparent ml-1" />
-                        </div>
+                        <Play size={16} className="text-white" />
                       </div>
                     </div>
-                    <div className="text-sm font-medium line-clamp-2">{video.title}</div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium line-clamp-2 mb-1">{video.title}</h4>
+                      <p className="text-xs text-gray-600">{video.channel}</p>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-          
-          {/* Empty State */}
-          {searchResults.length === 0 && recentVideos.length === 0 && !isSearching && (
-            <div className="h-full flex flex-col items-center justify-center text-gray-500">
-              <Youtube size={48} className="mb-2" />
-              <p>Pesquise por vídeos para começar</p>
-            </div>
-          )}
-          
-          {/* Loading State */}
-          {isSearching && (
-            <div className="flex justify-center py-8">
-              <div className="animate-pulse">Pesquisando...</div>
             </div>
           )}
         </div>
