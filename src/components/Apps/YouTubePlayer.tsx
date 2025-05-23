@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Search, Play, Volume2, VolumeX, Maximize2, Minimize2, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Play, Volume2, VolumeX, Maximize2, Minimize2, X, Youtube } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useLocalStorage from '@/hooks/useLocalStorage';
@@ -63,21 +63,6 @@ const YouTubePlayer: React.FC = () => {
   ];
 
   const [availableVideos, setAvailableVideos] = useState<Video[]>(lofiVideos);
-
-  // Inicializar com lofi girl se não houver vídeo atual
-  useEffect(() => {
-    if (!currentVideo) {
-      const lofiGirl = lofiVideos[0];
-      setCurrentVideo(lofiGirl);
-      setIsPlaying(true);
-      
-      toast({
-        title: "YouTube Player iniciado",
-        description: "Reproduzindo música lofi para estudar",
-        duration: 3000,
-      });
-    }
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,7 +146,7 @@ const YouTubePlayer: React.FC = () => {
         </form>
       </div>
 
-      {/* Player de vídeo */}
+      {/* Player de vídeo - só aparece quando um vídeo é selecionado */}
       {currentVideo && (
         <div className={`${isFullscreen ? 'fixed inset-0 z-50 bg-black' : 'relative'}`}>
           <div className={`${isFullscreen ? 'w-full h-full' : 'aspect-video'} relative`}>
@@ -210,6 +195,16 @@ const YouTubePlayer: React.FC = () => {
               <p className="text-xs text-gray-600">{currentVideo.channel}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Área de exibição vazia quando nenhum vídeo está selecionado */}
+      {!currentVideo && (
+        <div className="flex justify-center items-center h-48 bg-gray-100 mb-4">
+          <div className="text-center text-gray-500">
+            <Youtube size={48} className="mx-auto mb-2 opacity-50" />
+            <p>Selecione um vídeo para começar a reproduzir</p>
+          </div>
         </div>
       )}
 
