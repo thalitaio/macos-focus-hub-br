@@ -4,6 +4,7 @@ import { Search, MapPin, Wind, Droplets } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useLocalStorage from '@/hooks/useLocalStorage';
+import { useToast } from "@/hooks/use-toast";
 
 interface WeatherData {
   city: string;
@@ -20,34 +21,48 @@ const Weather: React.FC = () => {
   const [weatherData, setWeatherData] = useLocalStorage<WeatherData | null>('weather-data', null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   
-  // Mock weather data for demo
-  const fetchWeatherData = (searchCity: string) => {
+  const fetchWeatherData = async (searchCity: string) => {
     setLoading(true);
     setError(null);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      if (searchCity.toLowerCase() === 'error') {
-        setError('Cidade não encontrada');
-        setLoading(false);
-        return;
+    try {
+      const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=80c2ee74b45f4dcfabb33351241306&q=${searchCity}&aqi=no`);
+      
+      if (!response.ok) {
+        throw new Error('Cidade não encontrada');
       }
       
-      // Mock data
-      const mockWeatherData = {
-        city: searchCity || 'São Paulo',
-        country: 'BR',
-        temperature: Math.floor(Math.random() * 15) + 15, // Random temp between 15-30
-        humidity: Math.floor(Math.random() * 30) + 50, // Random humidity between 50-80%
-        windSpeed: Math.floor(Math.random() * 10) + 5, // Random wind speed between 5-15 km/h
-        description: ['Ensolarado', 'Parcialmente nublado', 'Nublado', 'Chuvoso'][Math.floor(Math.random() * 4)],
-        icon: ['01d', '02d', '03d', '10d'][Math.floor(Math.random() * 4)],
+      const data = await response.json();
+      
+      // Process API data
+      const weatherInfo: WeatherData = {
+        city: data.location.name,
+        country: data.location.country,
+        temperature: data.current.temp_c,
+        humidity: data.current.humidity,
+        windSpeed: data.current.wind_kph,
+        description: data.current.condition.text,
+        icon: data.current.condition.code.toString(),
       };
       
-      setWeatherData(mockWeatherData);
+      setWeatherData(weatherInfo);
+      toast({
+        title: "Clima atualizado",
+        description: `Dados de ${weatherInfo.city} carregados com sucesso`,
+      });
+    } catch (err) {
+      console.error('Weather fetch error:', err);
+      setError('Erro ao buscar dados do clima. Tente novamente.');
+      toast({
+        title: "Erro",
+        description: "Não foi possível obter os dados do clima",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
   
   // Initial weather data load
@@ -66,19 +81,59 @@ const Weather: React.FC = () => {
   
   // Weather icon based on condition
   const getWeatherIcon = (iconCode: string) => {
-    const icons: Record<string, string> = {
-      '01d': '☀️', // Clear sky
-      '02d': '⛅', // Few clouds
-      '03d': '☁️', // Scattered clouds
-      '04d': '☁️', // Broken clouds
-      '09d': '🌧️', // Shower rain
-      '10d': '🌦️', // Rain
-      '11d': '⛈️', // Thunderstorm
-      '13d': '❄️', // Snow
-      '50d': '🌫️', // Mist
+    // WeatherAPI condition codes mapping to emojis
+    const iconMap: Record<string, string> = {
+      '1000': '☀️', // Clear/Sunny
+      '1003': '⛅', // Partly cloudy
+      '1006': '☁️', // Cloudy
+      '1009': '☁️', // Overcast
+      '1030': '🌫️', // Mist
+      '1063': '🌦️', // Patchy rain
+      '1066': '🌨️', // Patchy snow
+      '1069': '🌧️', // Patchy sleet
+      '1072': '🌧️', // Patchy freezing drizzle
+      '1087': '⛈️', // Thundery outbreaks
+      '1114': '❄️', // Blowing snow
+      '1117': '❄️', // Blizzard
+      '1135': '🌫️', // Fog
+      '1147': '🌫️', // Freezing fog
+      '1150': '🌧️', // Patchy light drizzle
+      '1153': '🌧️', // Light drizzle
+      '1168': '🌧️', // Freezing drizzle
+      '1171': '🌧️', // Heavy freezing drizzle
+      '1180': '🌧️', // Patchy light rain
+      '1183': '🌧️', // Light rain
+      '1186': '🌧️', // Moderate rain
+      '1189': '🌧️', // Moderate rain
+      '1192': '🌧️', // Heavy rain
+      '1195': '🌧️', // Heavy rain
+      '1198': '🌧️', // Light freezing rain
+      '1201': '🌧️', // Moderate/Heavy freezing rain
+      '1204': '🌨️', // Light sleet
+      '1207': '🌨️', // Moderate/Heavy sleet
+      '1210': '🌨️', // Patchy light snow
+      '1213': '🌨️', // Light snow
+      '1216': '🌨️', // Patchy moderate snow
+      '1219': '🌨️', // Moderate snow
+      '1222': '🌨️', // Patchy heavy snow
+      '1225': '❄️', // Heavy snow
+      '1237': '🌨️', // Ice pellets
+      '1240': '🌧️', // Light rain shower
+      '1243': '🌧️', // Moderate/Heavy rain shower
+      '1246': '🌧️', // Torrential rain shower
+      '1249': '🌨️', // Light sleet showers
+      '1252': '🌨️', // Moderate/Heavy sleet showers
+      '1255': '🌨️', // Light snow showers
+      '1258': '🌨️', // Moderate/Heavy snow showers
+      '1261': '🌨️', // Light showers of ice pellets
+      '1264': '🌨️', // Moderate/Heavy showers of ice pellets
+      '1273': '⛈️', // Patchy light rain with thunder
+      '1276': '⛈️', // Moderate/Heavy rain with thunder
+      '1279': '⛈️', // Patchy light snow with thunder
+      '1282': '⛈️', // Moderate/Heavy snow with thunder
     };
     
-    return icons[iconCode] || '☁️';
+    return iconMap[iconCode] || '☁️';
   };
   
   return (

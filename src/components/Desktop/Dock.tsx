@@ -1,6 +1,9 @@
 
 import React from 'react';
-import { Calendar, Clock, List, Kanban, CheckSquare, FileText, Cloud, DollarSign, Youtube } from 'lucide-react';
+import { 
+  Calendar, Clock, List, Kanban, CheckSquare, FileText, Cloud, 
+  DollarSign, Youtube, Key, FileJson, Hash, Link
+} from 'lucide-react';
 
 interface DockItem {
   id: string;
@@ -18,7 +21,7 @@ const Dock: React.FC<DockProps> = ({ openApp }) => {
     {
       id: 'ambient-sounds',
       icon: <span className="text-2xl">🔊</span>,
-      label: 'Ambient Sounds',
+      label: 'Sons Ambientes',
       onClick: () => openApp('ambient-sounds'),
     },
     {
@@ -30,7 +33,7 @@ const Dock: React.FC<DockProps> = ({ openApp }) => {
     {
       id: 'todo',
       icon: <List size={24} />,
-      label: 'To-do List',
+      label: 'Lista de Tarefas',
       onClick: () => openApp('todo'),
     },
     {
@@ -48,19 +51,19 @@ const Dock: React.FC<DockProps> = ({ openApp }) => {
     {
       id: 'notepad',
       icon: <FileText size={24} />,
-      label: 'Notepad',
+      label: 'Bloco de Notas',
       onClick: () => openApp('notepad'),
     },
     {
       id: 'weather',
       icon: <Cloud size={24} />,
-      label: 'Weather',
+      label: 'Clima',
       onClick: () => openApp('weather'),
     },
     {
       id: 'currency',
       icon: <DollarSign size={24} />,
-      label: 'Currency',
+      label: 'Conversor de Moedas',
       onClick: () => openApp('currency'),
     },
     {
@@ -69,11 +72,41 @@ const Dock: React.FC<DockProps> = ({ openApp }) => {
       label: 'YouTube',
       onClick: () => openApp('youtube'),
     },
+    {
+      id: 'password-generator',
+      icon: <Key size={24} />,
+      label: 'Gerador de Senhas',
+      onClick: () => openApp('password-generator'),
+    },
+    {
+      id: 'code-formatter',
+      icon: <FileText size={24} />,
+      label: 'Formatador de Código',
+      onClick: () => openApp('code-formatter'),
+    },
+    {
+      id: 'json-yaml-converter',
+      icon: <FileJson size={24} />,
+      label: 'Conversor JSON/YAML',
+      onClick: () => openApp('json-yaml-converter'),
+    },
+    {
+      id: 'json-validator',
+      icon: <FileJson size={24} />,
+      label: 'Validador JSON',
+      onClick: () => openApp('json-validator'),
+    },
+    {
+      id: 'uuid-slug-generator',
+      icon: <Hash size={24} />,
+      label: 'Gerador UUID/Slug',
+      onClick: () => openApp('uuid-slug-generator'),
+    },
   ];
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 glass-effect rounded-2xl px-2 py-2">
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 flex-wrap justify-center max-w-5xl">
         {dockItems.map((item) => (
           <div
             key={item.id}

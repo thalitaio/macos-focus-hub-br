@@ -11,6 +11,11 @@ import Notepad from '../Apps/Notepad';
 import Weather from '../Apps/Weather';
 import CurrencyConverter from '../Apps/CurrencyConverter';
 import YouTubePlayer from '../Apps/YouTubePlayer';
+import PasswordGenerator from '../Apps/PasswordGenerator';
+import CodeFormatter from '../Apps/CodeFormatter';
+import JsonYamlConverter from '../Apps/JsonYamlConverter';
+import JsonValidator from '../Apps/JsonValidator';
+import UuidSlugGenerator from '../Apps/UuidSlugGenerator';
 
 interface AppState {
   id: string;
@@ -29,7 +34,7 @@ const Desktop: React.FC = () => {
     {
       id: 'ambient-sounds',
       isOpen: true,
-      title: 'Ambient Sounds',
+      title: 'Sons Ambientes',
       width: '320px',
       height: '400px',
       x: 100,
@@ -51,7 +56,7 @@ const Desktop: React.FC = () => {
     {
       id: 'todo',
       isOpen: true,
-      title: 'To-do List',
+      title: 'Lista de Tarefas',
       width: '400px',
       height: '500px',
       x: 100,
@@ -84,7 +89,7 @@ const Desktop: React.FC = () => {
     {
       id: 'notepad',
       isOpen: true,
-      title: 'Notepad',
+      title: 'Bloco de Notas',
       width: '500px',
       height: '400px',
       x: 1160,
@@ -95,7 +100,7 @@ const Desktop: React.FC = () => {
     {
       id: 'weather',
       isOpen: true,
-      title: 'Weather',
+      title: 'Clima',
       width: '400px',
       height: '300px',
       x: 830,
@@ -106,7 +111,7 @@ const Desktop: React.FC = () => {
     {
       id: 'currency',
       isOpen: true,
-      title: 'Currency Converter',
+      title: 'Conversor de Moedas',
       width: '350px',
       height: '250px',
       x: 100,
@@ -117,12 +122,67 @@ const Desktop: React.FC = () => {
     {
       id: 'youtube',
       isOpen: true,
-      title: 'YouTube Player',
+      title: 'YouTube',
       width: '600px',
       height: '400px',
       x: 480,
       y: 1040,
       component: <YouTubePlayer />,
+      minimized: false,
+    },
+    {
+      id: 'password-generator',
+      isOpen: false,
+      title: 'Gerador de Senhas',
+      width: '400px',
+      height: '450px',
+      x: 200,
+      y: 200,
+      component: <PasswordGenerator />,
+      minimized: false,
+    },
+    {
+      id: 'code-formatter',
+      isOpen: false,
+      title: 'Formatador de Código',
+      width: '700px',
+      height: '500px',
+      x: 300,
+      y: 300,
+      component: <CodeFormatter />,
+      minimized: false,
+    },
+    {
+      id: 'json-yaml-converter',
+      isOpen: false,
+      title: 'Conversor JSON ↔ YAML',
+      width: '700px',
+      height: '500px',
+      x: 400,
+      y: 200,
+      component: <JsonYamlConverter />,
+      minimized: false,
+    },
+    {
+      id: 'json-validator',
+      isOpen: false,
+      title: 'Validador JSON',
+      width: '700px',
+      height: '500px',
+      x: 500,
+      y: 250,
+      component: <JsonValidator />,
+      minimized: false,
+    },
+    {
+      id: 'uuid-slug-generator',
+      isOpen: false,
+      title: 'Gerador UUID/Slug',
+      width: '500px',
+      height: '500px',
+      x: 600,
+      y: 300,
+      component: <UuidSlugGenerator />,
       minimized: false,
     },
   ]);

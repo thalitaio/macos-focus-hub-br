@@ -17,25 +17,25 @@ const AmbientSounds: React.FC = () => {
       id: 'rain',
       name: 'Chuva',
       icon: '🌧️',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-light-rain-looping-1249.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_1b2fe41fca.mp3?filename=rain-and-thunder-113618.mp3',
     },
     {
       id: 'fire',
       name: 'Fogueira',
       icon: '🔥',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-campfire-crackles-1330.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_7b397374db.mp3?filename=fireplace-crackling-64524.mp3',
     },
     {
       id: 'ocean',
       name: 'Oceano',
       icon: '🌊',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-ambience-1185.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0fd8d1e95.mp3?filename=ocean-waves-112624.mp3',
     },
     {
       id: 'wind',
       name: 'Vento',
       icon: '🍃',
-      audioUrl: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-wind-ambient-1232.mp3',
+      audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/09/audio_1e1f764217.mp3?filename=windy-day-113275.mp3',
     },
   ]);
   
