@@ -23,62 +23,91 @@ const YouTubePlayer: React.FC = () => {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const { toast } = useToast();
 
-  // Real YouTube video search results
+  // Lofi videos suggestions
+  const lofiVideos: VideoItem[] = [
+    {
+      id: '5qap5aO4i9A',
+      title: 'lofi hip hop radio - beats to relax/study to',
+      thumbnail: 'https://img.youtube.com/vi/5qap5aO4i9A/mqdefault.jpg',
+    },
+    {
+      id: 'jfKfPfyJRdk',
+      title: 'lofi hip hop radio - beats to sleep/chill to',
+      thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg',
+    },
+    {
+      id: 'lTRiuFIWV54',
+      title: 'Study Music Alpha Waves: Focus Music',
+      thumbnail: 'https://img.youtube.com/vi/lTRiuFIWV54/mqdefault.jpg',
+    },
+    {
+      id: 'n61ULEU7CO0',
+      title: 'Ambient Study Music To Concentrate',
+      thumbnail: 'https://img.youtube.com/vi/n61ULEU7CO0/mqdefault.jpg',
+    },
+    {
+      id: 'DWcJFNfaw9c',
+      title: 'lofi hip hop radio - beats to study/relax to',
+      thumbnail: 'https://img.youtube.com/vi/DWcJFNfaw9c/mqdefault.jpg',
+    },
+    {
+      id: 'XULUBg_ZcAU',
+      title: 'beats to study/focus to',
+      thumbnail: 'https://img.youtube.com/vi/XULUBg_ZcAU/mqdefault.jpg',
+    },
+    {
+      id: 'FhiAFo9U_sM',
+      title: 'Friday night vibes ~ lofi hip hop mix',
+      thumbnail: 'https://img.youtube.com/vi/FhiAFo9U_sM/mqdefault.jpg',
+    },
+    {
+      id: 'sJGQWspFdhE',
+      title: 'rainy day studying 📚 [lofi hip hop/study beats]',
+      thumbnail: 'https://img.youtube.com/vi/sJGQWspFdhE/mqdefault.jpg',
+    },
+  ];
+  
   const searchVideos = (searchQuery: string) => {
     setIsSearching(true);
     console.log("Searching for videos with query:", searchQuery);
     
-    // More reliable video IDs and information
     setTimeout(() => {
-      const mockResults: VideoItem[] = [
-        {
-          id: 'dQw4w9WgXcQ',
-          title: 'Rick Astley - Never Gonna Give You Up',
-          thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        },
-        {
-          id: '5qap5aO4i9A',
-          title: 'lofi hip hop radio - beats to relax/study to',
-          thumbnail: 'https://img.youtube.com/vi/5qap5aO4i9A/mqdefault.jpg',
-        },
-        {
-          id: 'jfKfPfyJRdk',
-          title: 'lofi hip hop radio - beats to sleep/chill to',
-          thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/mqdefault.jpg',
-        },
-        {
-          id: 'lTRiuFIWV54',
-          title: 'Study Music Alpha Waves: Focus Music',
-          thumbnail: 'https://img.youtube.com/vi/lTRiuFIWV54/mqdefault.jpg',
-        },
-        {
-          id: 'n61ULEU7CO0',
-          title: 'Ambient Study Music To Concentrate',
-          thumbnail: 'https://img.youtube.com/vi/n61ULEU7CO0/mqdefault.jpg',
-        },
-      ];
+      let results = [...lofiVideos];
       
       // Filter results based on query if provided
-      const filteredResults = searchQuery
-        ? mockResults.filter(v => 
-            v.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        : mockResults;
+      if (searchQuery) {
+        results = results.filter(v => 
+          v.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
       
-      setSearchResults(filteredResults);
+      setSearchResults(results);
       setIsSearching(false);
-      console.log("Search results:", filteredResults);
+      console.log("Search results:", results);
       
-      if (filteredResults.length === 0 && searchQuery) {
+      if (results.length === 0 && searchQuery) {
         setShowErrorMessage(true);
         setTimeout(() => setShowErrorMessage(false), 3000);
       }
-    }, 1000);
+    }, 500);
   };
   
   // Initial load
   useEffect(() => {
     console.log("YouTubePlayer component mounted");
     searchVideos('');
+    
+    // Automatically play the first lofi video if no active video
+    if (!activeVideoId && lofiVideos.length > 0) {
+      setTimeout(() => {
+        playVideo(lofiVideos[0]);
+        toast({
+          title: "Bem-vindo ao YouTube Player",
+          description: "Iniciando automaticamente uma playlist lofi para você",
+          duration: 3000,
+        });
+      }, 1000);
+    }
   }, []);
   
   const handleSearch = (e: React.FormEvent) => {
@@ -203,7 +232,7 @@ const YouTubePlayer: React.FC = () => {
           {searchResults.length > 0 && (
             <div>
               <h3 className="text-lg font-medium mb-3">
-                {query ? `Resultados para "${query}"` : 'Vídeos recomendados'}
+                {query ? `Resultados para "${query}"` : 'Lofi Recomendados'}
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {searchResults.map(video => (

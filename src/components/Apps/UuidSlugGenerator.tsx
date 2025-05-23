@@ -1,113 +1,58 @@
 
 import React, { useState } from 'react';
-import { Copy, Check, RefreshCw } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { Copy, RefreshCw, Check } from 'lucide-react';
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
 const UuidSlugGenerator: React.FC = () => {
-  const [uuid, setUuid] = useState('');
-  const [text, setText] = useState('');
-  const [slug, setSlug] = useState('');
-  const [copied, setCopied] = useState<{uuid: boolean; slug: boolean}>({uuid: false, slug: false});
+  const [uuid, setUuid] = useState<string>('');
+  const [slug, setSlug] = useState<string>('');
+  const [text, setText] = useState<string>('');
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
-  // Generate UUID on component mount
-  React.useEffect(() => {
-    generateUuid();
-  }, []);
-
-  const generateUuid = () => {
-    // Implementation of RFC4122 version 4 UUID
-    const cryptoObj = window.crypto || window.Crypto;
+  const generateUUID = () => {
+    // Fixed implementation to avoid TS errors
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
     
-    if (cryptoObj && cryptoObj.getRandomValues) {
-      // Use Web Crypto API if available
-      const buffer = new Uint16Array(8);
-      cryptoObj.getRandomValues(buffer);
-      
-      // Set version bits (4 = random UUID)
-      buffer[3] = (buffer[3] & 0x0FFF) | 0x4000;
-      // Set variant bits (8, 9, A, or B)
-      buffer[4] = (buffer[4] & 0x3FFF) | 0x8000;
-      
-      const stringBuffer = Array.from(buffer, value => 
-        value.toString(16).padStart(4, '0')
-      );
-      
-      const result = `${stringBuffer[0]}${stringBuffer[1]}-${stringBuffer[2]}-${stringBuffer[3]}-${stringBuffer[4]}-${stringBuffer[5]}${stringBuffer[6]}${stringBuffer[7]}`;
-      setUuid(result);
-    } else {
-      // Fallback to Math.random() if Web Crypto API is not available
-      const lut: string[] = [];
-      for (let i = 0; i < 256; i++) {
-        lut[i] = (i < 16 ? '0' : '') + i.toString(16);
-      }
-      
-      const d0 = Math.random() * 0xffffffff | 0;
-      const d1 = Math.random() * 0xffffffff | 0;
-      const d2 = Math.random() * 0xffffffff | 0;
-      const d3 = Math.random() * 0xffffffff | 0;
-      
-      const result = 
-        lut[d0 & 0xff] + lut[d0 >> 8 & 0xff] + lut[d0 >> 16 & 0xff] + lut[d0 >> 24 & 0xff] + '-' +
-        lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + '-' +
-        lut[d1 >> 16 & 0x0f | 0x40] + lut[d1 >> 24 & 0xff] + '-' +
-        lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + '-' +
-        lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] +
-        lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] + lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff];
-      
-      setUuid(result);
-    }
-    
-    // Reset copy status
-    setCopied(prev => ({...prev, uuid: false}));
+    setUuid(uuid);
+    return uuid;
   };
 
-  const generateSlug = () => {
-    if (!text.trim()) {
-      toast({
-        title: "Erro",
-        description: "Por favor, insira um texto para gerar o slug",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Create slug from text
-    const slugResult = text
+  const generateSlug = (text: string) => {
+    const slug = text
       .toLowerCase()
-      .normalize('NFD') // Normalize diacritics
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Remove consecutive hyphens
-      .trim() // Remove whitespace from both ends
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
     
-    setSlug(slugResult);
-    
-    // Reset copy status
-    setCopied(prev => ({...prev, slug: false}));
+    setSlug(slug);
+    return slug;
   };
 
-  const copyToClipboard = async (type: 'uuid' | 'slug') => {
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+    generateSlug(newText);
+  };
+
+  const copyToClipboard = async (content: string) => {
     try {
-      const textToCopy = type === 'uuid' ? uuid : slug;
-      await navigator.clipboard.writeText(textToCopy);
-      
-      setCopied(prev => ({...prev, [type]: true}));
-      
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
       toast({
         title: "Copiado!",
-        description: `${type.toUpperCase()} copiado para a área de transferência`,
+        description: "Conteúdo copiado para a área de transferência",
       });
       
-      // Reset copy state after 2 seconds
-      setTimeout(() => {
-        setCopied(prev => ({...prev, [type]: false}));
-      }, 2000);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast({
         title: "Erro",
@@ -117,92 +62,89 @@ const UuidSlugGenerator: React.FC = () => {
     }
   };
 
+  // Generate initial UUID on component mount
+  React.useEffect(() => {
+    generateUUID();
+  }, []);
+
   return (
     <div className="h-full flex flex-col">
       <h2 className="text-lg font-semibold mb-4">Gerador de UUID e Slug</h2>
       
       <Tabs defaultValue="uuid" className="flex-1">
-        <TabsList className="mb-6 grid grid-cols-2">
+        <TabsList>
           <TabsTrigger value="uuid">UUID</TabsTrigger>
           <TabsTrigger value="slug">Slug</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="uuid" className="space-y-6">
-          <div className="flex items-center space-x-2">
+        <TabsContent value="uuid" className="space-y-4">
+          <div className="flex">
             <Input 
               value={uuid} 
               readOnly 
-              className="font-mono flex-1"
+              className="font-mono flex-1 mr-2"
             />
             <Button 
-              onClick={() => copyToClipboard('uuid')} 
+              onClick={() => copyToClipboard(uuid)} 
               className="w-10 p-0" 
               variant="outline"
-              aria-label="Copiar UUID"
             >
-              {copied.uuid ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+              {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
             </Button>
             <Button 
-              onClick={generateUuid} 
-              className="w-10 p-0" 
+              onClick={generateUUID} 
+              className="w-10 p-0 ml-2" 
               variant="outline"
-              aria-label="Gerar novo UUID"
             >
               <RefreshCw size={18} />
             </Button>
           </div>
           
           <div>
-            <h3 className="text-sm font-medium mb-2">O que é UUID?</h3>
-            <p className="text-sm text-gray-600">
-              UUID (Universally Unique Identifier) é um identificador de 128 bits padronizado que é 
-              praticamente garantido ser único globalmente. É comumente usado em sistemas distribuídos 
-              para identificar informações sem coordenação central.
+            <p className="text-sm text-gray-500">
+              Um UUID (Identificador Único Universal) é um identificador de 128 bits padronizado usado para identificar recursos de maneira única.
             </p>
           </div>
         </TabsContent>
         
-        <TabsContent value="slug" className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Texto</label>
+        <TabsContent value="slug" className="space-y-4">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Texto para converter
+            </label>
             <Input 
               value={text} 
-              onChange={(e) => setText(e.target.value)} 
-              placeholder="Digite um texto para converter em slug..."
+              onChange={handleTextChange} 
+              placeholder="Digite um texto para gerar um slug"
               className="mb-2"
             />
-            <Button onClick={generateSlug} className="w-full mb-4">
-              Gerar Slug
+          </div>
+          
+          <div className="flex">
+            <Input 
+              value={slug} 
+              readOnly 
+              className="font-mono flex-1 mr-2"
+            />
+            <Button 
+              onClick={() => copyToClipboard(slug)} 
+              className="w-10 p-0" 
+              variant="outline"
+            >
+              {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+            </Button>
+            <Button 
+              onClick={() => generateSlug(text)} 
+              className="w-10 p-0 ml-2" 
+              variant="outline"
+            >
+              <RefreshCw size={18} />
             </Button>
           </div>
           
-          {slug && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Slug gerado</label>
-              <div className="flex items-center space-x-2">
-                <Input 
-                  value={slug} 
-                  readOnly 
-                  className="font-mono flex-1"
-                />
-                <Button 
-                  onClick={() => copyToClipboard('slug')} 
-                  className="w-10 p-0" 
-                  variant="outline"
-                  aria-label="Copiar slug"
-                >
-                  {copied.slug ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
-                </Button>
-              </div>
-            </div>
-          )}
-          
           <div>
-            <h3 className="text-sm font-medium mb-2">O que é um Slug?</h3>
-            <p className="text-sm text-gray-600">
-              Um slug é uma versão amigável para URL de um texto. É normalmente composto por 
-              letras minúsculas, números e hifens, e é usado em URLs para identificar recursos 
-              de forma legível para humanos.
+            <p className="text-sm text-gray-500">
+              Um slug é uma versão amigável para URL de uma string, geralmente usada para criar URLs legíveis para humanos.
             </p>
           </div>
         </TabsContent>

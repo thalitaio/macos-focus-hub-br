@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import Dock from './Dock';
 import AppWindow from './AppWindow';
-import AmbientSounds from '../Apps/AmbientSounds';
 import PomodoroTimer from '../Apps/PomodoroTimer';
 import TodoApp from '../Apps/TodoApp';
 import KanbanBoard from '../Apps/KanbanBoard';
@@ -16,6 +15,7 @@ import CodeFormatter from '../Apps/CodeFormatter';
 import JsonYamlConverter from '../Apps/JsonYamlConverter';
 import JsonValidator from '../Apps/JsonValidator';
 import UuidSlugGenerator from '../Apps/UuidSlugGenerator';
+import JsonCreator from '../Apps/JsonCreator';
 
 interface AppState {
   id: string;
@@ -32,23 +32,12 @@ interface AppState {
 const Desktop: React.FC = () => {
   const [apps, setApps] = useState<AppState[]>([
     {
-      id: 'ambient-sounds',
-      isOpen: true,
-      title: 'Sons Ambientes',
-      width: '320px',
-      height: '400px',
-      x: 100,
-      y: 100,
-      component: <AmbientSounds />,
-      minimized: false,
-    },
-    {
       id: 'pomodoro',
       isOpen: true,
       title: 'Pomodoro Timer',
       width: '350px',
       height: '300px',
-      x: 450,
+      x: 100,
       y: 100,
       component: <PomodoroTimer />,
       minimized: false,
@@ -60,7 +49,7 @@ const Desktop: React.FC = () => {
       width: '400px',
       height: '500px',
       x: 100,
-      y: 520,
+      y: 420,
       component: <TodoApp />,
       minimized: false,
     },
@@ -70,7 +59,7 @@ const Desktop: React.FC = () => {
       title: 'Kanban Board',
       width: '800px',
       height: '600px',
-      x: 830,
+      x: 520,
       y: 100,
       component: <KanbanBoard />,
       minimized: false,
@@ -82,40 +71,40 @@ const Desktop: React.FC = () => {
       width: '600px',
       height: '500px',
       x: 530,
-      y: 520,
+      y: 720,
       component: <HabitTracker />,
       minimized: false,
     },
     {
       id: 'notepad',
-      isOpen: true,
+      isOpen: false,
       title: 'Bloco de Notas',
       width: '500px',
       height: '400px',
       x: 1160,
-      y: 720,
+      y: 420,
       component: <Notepad />,
       minimized: false,
     },
     {
       id: 'weather',
-      isOpen: true,
+      isOpen: false,
       title: 'Clima',
       width: '400px',
       height: '300px',
       x: 830,
-      y: 720,
+      y: 420,
       component: <Weather />,
       minimized: false,
     },
     {
       id: 'currency',
-      isOpen: true,
+      isOpen: false,
       title: 'Conversor de Moedas',
       width: '350px',
       height: '250px',
       x: 100,
-      y: 1040,
+      y: 940,
       component: <CurrencyConverter />,
       minimized: false,
     },
@@ -125,8 +114,8 @@ const Desktop: React.FC = () => {
       title: 'YouTube',
       width: '600px',
       height: '400px',
-      x: 480,
-      y: 1040,
+      x: 1160,
+      y: 100,
       component: <YouTubePlayer />,
       minimized: false,
     },
@@ -185,10 +174,21 @@ const Desktop: React.FC = () => {
       component: <UuidSlugGenerator />,
       minimized: false,
     },
+    {
+      id: 'json-creator',
+      isOpen: false,
+      title: 'Criador de JSON',
+      width: '600px',
+      height: '600px',
+      x: 700,
+      y: 150,
+      component: <JsonCreator />,
+      minimized: false,
+    },
   ]);
 
   // Track z-index for window stacking
-  const [activeAppId, setActiveAppId] = useState<string | null>('pomodoro');
+  const [activeAppId, setActiveAppId] = useState<string | null>('youtube');
   
   const openApp = (appId: string) => {
     setApps((prevApps) =>
