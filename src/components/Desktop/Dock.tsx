@@ -98,7 +98,12 @@ const Dock: React.FC<DockProps> = ({ openApp }) => {
     },
     {
       id: 'json-creator',
-      icon: <Plus size={20} className="mr-1" /><FileJson size={20} />,
+      icon: (
+        <>
+          <Plus size={20} className="mr-1" />
+          <FileJson size={20} />
+        </>
+      ),
       label: 'Criador de JSON',
       onClick: () => openApp('json-creator'),
     },
